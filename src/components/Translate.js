@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Form, TextArea, Button, Icon } from "semantic-ui-react";
+import TranslateHeader from "./TranslateHeader";
+import TranslateBody from "./TranslateBody";
 import axios from "axios";
 
 export default function Translate() {
-  const [inputText, setInputText] = useState("");
-  const [resultText, setResultText] = useState("");
-  const [selectedLanguageKey, setLanguageKey] = useState("");
+  const [inputText, setInputText] = useState(""),
+    [resultText, setResultText] = useState(""),
+    [selectedLanguageKey, setLanguageKey] = useState(""),
+    [detectLanguageKey, setdetectedLanguageKey] = useState("");
   const [languagesList, setLanguagesList] = useState([]);
-  const [detectLanguageKey, setdetectedLanguageKey] = useState("");
   
   const getLanguageSource = useCallback(() => {
     axios
@@ -15,12 +16,13 @@ export default function Translate() {
         q: inputText,
       })
       .then((response) => {
-        setdetectedLanguageKey(response.data[0].language);
+        let [data] = response.data;
+        setdetectedLanguageKey(data.language);
       });
   }, [inputText]);
-  const translateText = () => {
+  
+  const handleTranslateTextOnClick = () => {
     setResultText(inputText);
-
     getLanguageSource();
 
     let data = {
@@ -28,13 +30,10 @@ export default function Translate() {
       source: detectLanguageKey,
       target: selectedLanguageKey,
     };
+    
     axios.post("https://libretranslate.de/translate", data).then((response) => {
       setResultText(response.data.translatedText);
     });
-  };
-
-  const languageKey = (selectedLanguage) => {
-    setLanguageKey(selectedLanguage.target.value);
   };
 
   useEffect(() => {
@@ -44,41 +43,21 @@ export default function Translate() {
 
     getLanguageSource();
   }, [inputText, getLanguageSource]);
+  
   return (
-    <div>
-      <div className="app-header">
-        <h2 className="header">Sanjeet&apos;s Translator</h2>
-      </div>
+    <>
+      <TranslateHeader className="app-header">
+        {"Jeff's Translator"}
+      </TranslateHeader>
 
-      <div className="app-body">
-        <div>
-          <Form>
-            <Form.Field
-              control={TextArea}
-              placeholder="Type Text to Translate.."
-              onChange={(e) => setInputText(e.target.value)}
-            />
-
-            <select className="language-select" onChange={languageKey}>
-              <option>Please Select Language..</option>
-              {languagesList.map((language) => {
-                return <option key={language.code} value={language.code}>{language.name}</option>;
-              })}
-            </select>
-
-            <Form.Field
-              control={TextArea}
-              placeholder="Your Result Translation.."
-              value={resultText}
-            />
-
-            <Button color="orange" size="large" onClick={translateText}>
-              <Icon name="translate" />
-              Translate
-            </Button>
-          </Form>
-        </div>
-      </div>
-    </div>
+      <TranslateBody
+        className="app-body"
+        resultText={resultText}
+        languagesList={languagesList}
+        handleLanguageKeyOnChange={e => setLanguageKey(e.target.value)}
+        handleTranslateTextOnClick={handleTranslateTextOnClick}
+        setInputText={setInputText}
+      />
+    </>
   );
 }
