@@ -1,10 +1,11 @@
-import './App.css';
-import Translate from './components/Translate';
+import React from "react";
+import "./App.css";
+import Translate from "./components/Translate";
 
 function App() {
   return (
     <div>
-      <Translate/>
+      <Translate />
     </div>
   );
 }
